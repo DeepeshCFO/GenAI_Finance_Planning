@@ -1,0 +1,359 @@
+import os
+from dotenv import load_dotenv
+from neo4j import GraphDatabase
+
+import json
+
+
+import pandas as pd
+from hashlib import md5
+from datetime import datetime
+
+
+load_dotenv('.env', override=True)
+
+NEO4J_URI = os.getenv('NEO4J_NEW_URI')
+NEO4J_USERNAME = os.getenv('NEO4J_USERNAME')
+NEO4J_PASSWORD = os.getenv('NEO4J_NEW_PASSWORD')
+NEO4J_DATABASE = os.getenv('NEO4J_DATABASE') or 'neo4j'
+
+# Connect to Neo4j (Python)
+driver = GraphDatabase.driver(
+    NEO4J_URI,
+    auth=(NEO4J_USERNAME, NEO4J_PASSWORD)
+)
+
+
+# Create Constraints & Indexes (Run Once)
+def create_constraints(tx):
+    tx.run("CREATE CONSTRAINT IF NOT EXISTS FOR (c:Company) REQUIRE c.company_code IS UNIQUE")
+    tx.run("CREATE CONSTRAINT IF NOT EXISTS FOR (b:BusinessUnit) REQUIRE b.bu_code IS UNIQUE")
+    tx.run("CREATE CONSTRAINT IF NOT EXISTS FOR (cc:CostCenter) REQUIRE cc.cc_code IS UNIQUE")
+    tx.run("CREATE CONSTRAINT IF NOT EXISTS FOR (g:GLAccount) REQUIRE g.gl_code IS UNIQUE")
+    tx.run("CREATE CONSTRAINT IF NOT EXISTS FOR (p:Product) REQUIRE p.product_code IS UNIQUE")
+    tx.run("CREATE CONSTRAINT IF NOT EXISTS FOR (v:PlanningVersion) REQUIRE v.version_id IS UNIQUE")
+    tx.run("CREATE CONSTRAINT IF NOT EXISTS FOR (t:TimePeriod) REQUIRE t.period IS UNIQUE")
+    tx.run("CREATE CONSTRAINT IF NOT EXISTS FOR (f:PlanningFact) REQUIRE f.id IS UNIQUE")
+    tx.run("CREATE CONSTRAINT IF NOT EXISTS FOR (n:Narrative) REQUIRE n.narrative_id IS UNIQUE")
+
+with driver.session() as session:
+    session.execute_write(create_constraints)
+
+
+# Helper Functions
+
+def fact_id(*args):
+    clean_args = [str(a) for a in args]
+    return md5("|".join(clean_args).encode()).hexdigest()
+
+
+
+# Load OPEX Planning CSV
+
+def load_opex(tx, row):
+    fid = fact_id(
+        row["Planning_Version"],
+        row["Cost_Center"],
+        row["GL_Account"],
+        row["Time_Period"],
+        "OPEX"
+    )
+
+
+    tx.run("""
+    MERGE (f:PlanningFact {id:$id})
+    SET f.type='OPEX',
+        f.amount=$amount,
+        f.currency=$currency,
+        f.source='Excel',
+        f.created_at=$created
+    MERGE (c:Company {company_code:$company})
+    MERGE (bu:BusinessUnit {bu_code:$bu})
+    MERGE (cc:CostCenter {cc_code:$cc})
+    MERGE (g:GLAccount {gl_code:$gl})
+    MERGE (t:TimePeriod {period:$period})
+    MERGE (v:PlanningVersion {version_id:$version})
+
+    MERGE (c)-[:HAS_BU]->(bu)
+    MERGE (bu)-[:HAS_COST_CENTER]->(cc)
+
+    MERGE (f)-[:FOR_VERSION]->(v)
+    MERGE (f)-[:FOR_COST_CENTER {role:'OWNER'}]->(cc)
+    MERGE (f)-[:FOR_GL]->(g)
+    MERGE (f)-[:FOR_TIME]->(t)
+    """, {
+        "id": fid,
+        "amount": float(row["Amount"]),
+        "currency": row["Currency"],
+        "created": datetime.now().isoformat(),
+        "company": row["Company_Code"],
+        "bu": row["Business_Unit"],
+        "cc": row["Cost_Center"],
+        "gl": row["GL_Account"],
+        "period": row["Time_Period"],
+        "version": row["Planning_Version"]
+    })
+
+INPUT_FILE = r"C:\Users\deepe\OneDrive\Documents\Python Deepesh\IFP Models wise files\OPEX_Planning.csv"
+opex_df = pd.read_csv(INPUT_FILE)
+
+with driver.session() as session:
+    for _, row in opex_df.iterrows():
+        session.execute_write(load_opex, row)
+
+
+# Load Sales Planning CSV
+
+def load_sales(tx, row):
+    fid = fact_id(
+        row["Planning_Version"],
+        row["Product"],
+        row["GL_Account"],
+        row["Time_Period"],
+        "REVENUE"
+    )
+
+    tx.run("""
+    MERGE (f:PlanningFact {id:$id})
+    SET f.type='REVENUE',
+        f.amount=$amount,
+        f.currency=$currency,
+        f.source='Excel'
+
+    MERGE (p:Product {product_code:$product})
+    MERGE (m:Market {country:$market})
+    MERGE (g:GLAccount {gl_code:$gl})
+    MERGE (t:TimePeriod {period:$period})
+    MERGE (v:PlanningVersion {version_id:$version})
+
+    MERGE (f)-[:FOR_PRODUCT]->(p)
+    MERGE (f)-[:FOR_MARKET]->(m)
+    MERGE (f)-[:FOR_GL]->(g)
+    MERGE (f)-[:FOR_TIME]->(t)
+    MERGE (f)-[:FOR_VERSION]->(v)
+    """, {
+        "id": fid,
+        "amount": float(row["Amount"]),
+        "currency": row["Currency"],
+        "product": row["Product"],
+        "market": row["Market"],
+        "gl": row["GL_Account"],
+        "period": row["Time_Period"],
+        "version": row["Planning_Version"]
+    })
+
+INPUT_FILE = r"C:\Users\deepe\OneDrive\Documents\Python Deepesh\IFP Models wise files\Sales_Planning.csv"
+sales_df = pd.read_csv(INPUT_FILE)
+
+with driver.session() as session:
+    for _, row in sales_df.iterrows():
+        session.execute_write(load_sales, row)
+
+# Load Product cost planning CSV
+
+def load_product_cost(tx, row):
+    fid = fact_id(
+        row["Planning_Version"],
+        row["Product"],
+        row["Cost_Center"],
+        row["GL_Account"],
+        row["Time_Period"],
+        "PRODUCT_COST"
+    )
+
+    tx.run("""
+    MERGE (f:PlanningFact {id:$id})
+    SET f.type='PRODUCT_COST',
+        f.amount=$amount,
+        f.currency=$currency,
+        f.source='Excel'
+
+    MERGE (p:Product {product_code:$product})
+    MERGE (cc:CostCenter {cc_code:$cc})
+    MERGE (g:GLAccount {gl_code:$gl})
+    MERGE (t:TimePeriod {period:$period})
+    MERGE (v:PlanningVersion {version_id:$version})
+
+    MERGE (f)-[:FOR_PRODUCT]->(p)
+    MERGE (f)-[:FOR_COST_CENTER {role:'ORIGIN'}]->(cc)
+    MERGE (f)-[:FOR_GL]->(g)
+    MERGE (f)-[:FOR_TIME]->(t)
+    MERGE (f)-[:FOR_VERSION]->(v)
+    """, {
+        "id": fid,
+        "amount": float(row["Amount"]),
+        "currency": row["Currency"],
+        "product": row["Product"],
+        "cc": row["Cost_Center"],
+        "gl": row["GL_Account"],
+        "period": row["Time_Period"],
+        "version": row["Planning_Version"]
+    })
+
+INPUT_FILE = r"C:\Users\deepe\OneDrive\Documents\Python Deepesh\IFP Models wise files\Product_Cost_Planning.csv"
+prod_cost_df = pd.read_csv(INPUT_FILE)
+
+with driver.session() as session:
+    for _, row in prod_cost_df.iterrows():
+        session.execute_write(load_product_cost, row)
+
+# Load Narratives CSV
+
+def load_narrative(tx, row):
+    tx.run("""
+    MERGE (n:Narrative {narrative_id:$id})
+    SET n.type=$type,
+        n.scope=$scope,
+        n.text=$text
+
+    MERGE (v:PlanningVersion {version_id:$version})
+    MERGE (n)-[:FOR_VERSION]->(v)
+    """, {
+        "id": row["Narrative_ID"],
+        "type": row["Narrative_Type"],
+        "scope": row["Scope"],
+        "text": row["Narrative_Text"],
+        "version": row["Planning_Version"]
+    })
+
+INPUT_FILE = r"C:\Users\deepe\OneDrive\Documents\Python Deepesh\IFP Models wise files\Narratives_Master_With_Version.csv"
+narr_df = pd.read_csv(INPUT_FILE)
+
+with driver.session() as session:
+    for _, row in narr_df.iterrows():
+        session.execute_write(load_narrative, row)
+
+# Context ID generator
+
+def context_id(*args):
+    """
+    Generate a deterministic context ID from business keys
+    """
+    clean_args = [str(a) for a in args]
+    return md5("|".join(clean_args).encode()).hexdigest()
+
+
+# Create YoY Contexts
+
+def create_yoy_contexts(session):
+    query = """
+    MATCH (f1:PlanningFact {type:"OPEX"})-[:FOR_GL]->(g:GLAccount)
+    MATCH (f1)-[:FOR_COST_CENTER]->(cc:CostCenter)
+    MATCH (f1)-[:FOR_TIME]->(t1:TimePeriod)
+
+    MATCH (f2:PlanningFact {type:"OPEX"})-[:FOR_GL]->(g)
+    MATCH (f2)-[:FOR_COST_CENTER]->(cc)
+    MATCH (f2)-[:FOR_TIME]->(t2:TimePeriod)
+
+    WHERE t1.month = t2.month
+      AND t1.year = t2.year + 1
+      AND abs((f1.amount - f2.amount) / f2.amount) > 0.1
+
+    RETURN f1, f2, g, cc, t1, t2
+    """
+
+    results = session.run(query)
+
+    for r in results:
+        cid = context_id(
+            "YOY",
+            r["g"]["gl_code"],
+            r["cc"]["cc_code"],
+            r["t1"]["period"]
+        )
+
+        filters = {
+            "type": "OPEX",
+            "gl": r["g"]["gl_code"],
+            "cost_center": r["cc"]["cc_code"],
+            "period": r["t1"]["period"]
+        }
+
+        session.run("""
+        MERGE (c:Context {context_id:$id})
+        SET c.context_type='YOY',
+            c.metric='OPEX',
+            c.description=$desc,
+            c.filters_json=$filters,
+            c.created_at=$created
+
+        MERGE (c)-[:COVERS]->($f1)
+        MERGE (c)-[:COVERS]->($f2)
+        """, {
+            "id": cid,
+            "desc": f"OPEX changed significantly YoY for GL {r['g']['gl_code']} and Cost Center {r['cc']['cc_code']}",
+            "filters": json.dumps(filters),
+            "created": datetime.now().isoformat(),
+            "f1": r["f1"],
+            "f2": r["f2"]
+        })
+
+# Create Version-vs-Version Contexts
+
+def create_version_compare_contexts(session):
+    query = """
+    MATCH (f1:PlanningFact)-[:FOR_VERSION]->(v1:PlanningVersion)
+    MATCH (f2:PlanningFact)-[:FOR_VERSION]->(v2:PlanningVersion)
+    MATCH (f1)-[:FOR_GL]->(g:GLAccount)
+    MATCH (f1)-[:FOR_COST_CENTER]->(cc:CostCenter)
+    MATCH (f1)-[:FOR_TIME]->(t:TimePeriod)
+
+    MATCH (f2)-[:FOR_GL]->(g)
+    MATCH (f2)-[:FOR_COST_CENTER]->(cc)
+    MATCH (f2)-[:FOR_TIME]->(t)
+
+    WHERE v1.version_id <> v2.version_id
+      AND abs((f1.amount - f2.amount) / f2.amount) > 0.1
+
+    RETURN
+      f1.id AS f1_id,
+      f2.id AS f2_id,
+      v1.version_id AS v1_id,
+      v2.version_id AS v2_id,
+      g.gl_code AS gl_code,
+      cc.cc_code AS cc_code,
+      t.period AS period
+    """
+
+    results = session.run(query)
+
+    for r in results:
+        cid = context_id(
+            "VERSION",
+            r["v1_id"],
+            r["v2_id"],
+            r["gl_code"],
+            r["period"]
+        )
+
+        desc = (
+            f"{r['v1_id']} differs from {r['v2_id']} "
+            f"for GL {r['gl_code']} in period {r['period']}"
+        )
+
+        session.run("""
+        MERGE (c:Context {context_id:$id})
+        SET c.context_type = 'VERSION_COMPARE',
+            c.metric = 'OPEX',
+            c.description = $desc,
+            c.created_at = $created
+
+        WITH c
+        MATCH (f1:PlanningFact {id:$f1_id})
+        MATCH (f2:PlanningFact {id:$f2_id})
+        MERGE (c)-[:COVERS]->(f1)
+        MERGE (c)-[:COVERS]->(f2)
+        """, {
+            "id": cid,
+            "desc": desc,
+            "created": datetime.now().isoformat(),
+            "f1_id": r["f1_id"],
+            "f2_id": r["f2_id"]
+        })
+
+
+with driver.session() as session:
+     session.execute_write(create_yoy_contexts)
+
+with driver.session() as session:
+     session.execute_write(create_version_compare_contexts)
