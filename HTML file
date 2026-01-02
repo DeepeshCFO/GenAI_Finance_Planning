@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FP&A Chat</title>
+</head>
+<body>
+  <h2>Financial Planning & Analytics (FP&A) - Assistant</h2>
+
+  <input id="question" placeholder="Ask a question..." size="80">
+  <button onclick="ask()">Ask</button>
+
+  <pre id="answer"></pre>
+
+  <script>
+    function ask() {
+      fetch("/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: document.getElementById("question").value
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("answer").innerText = data.answer;
+      });
+    }
+  </script>
+</body>
+</html>
