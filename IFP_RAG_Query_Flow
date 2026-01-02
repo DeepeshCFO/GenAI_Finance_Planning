@@ -1,0 +1,597 @@
+import os
+from dotenv import load_dotenv
+
+from openai import OpenAI
+from neo4j import GraphDatabase
+import json
+
+import pandas as pd
+from hashlib import md5
+from datetime import datetime
+
+
+load_dotenv('.env', override=True)
+
+
+
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+OPENAI_BASE_URL = os.getenv('OPENAI_BASE_URL')
+
+NEO4J_URI = os.getenv('NEO4J_NEW_URI')
+NEO4J_USERNAME = os.getenv('NEO4J_USERNAME')
+NEO4J_PASSWORD = os.getenv('NEO4J_NEW_PASSWORD')
+NEO4J_DATABASE = os.getenv('NEO4J_DATABASE') or 'neo4j'
+
+# Connect to Neo4j (Python)
+driver = GraphDatabase.driver(
+    NEO4J_URI,
+    auth=(NEO4J_USERNAME, NEO4J_PASSWORD)
+)
+
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+
+
+METRIC_DOMAIN_MAP = {
+    "salary": ["employee", "salary", "wages"],
+    "salary cost": ["employee", "salary"],
+    "revenue": ["revenue", "sales", "income"],
+    "product cost": ["product", "cogs", "cost of goods"],
+    "it cost": ["it", "technology", "systems"],
+    "margin": ["margin", "profit"]
+}
+
+# Code to remove the hardcoded GL code:
+
+
+def extract_query_structure(question: str) -> dict:
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": """
+You are an FP&A query parser.
+
+Return STRICT JSON with:
+- intent: one of [compare, aggregate, explain, scenario]
+- planning_scope: one of [OPEX, REVENUE, PRODUCT_COST, PL]
+- metrics: list of business metrics (e.g. salary cost, revenue, product cost)
+- deltas: OPTIONAL object like { "salary cost": -5, "it cost": 10 }
+- source_version: OPTIONAL (explicit planning version only)
+- target_version: OPTIONAL (name of new version)
+
+Rules:
+- Percentages are numeric (+/-)
+- If intent=scenario and version not mentioned, assume latest version
+- Do NOT infer version from words like "better"
+
+Return ONLY valid JSON.
+"""
+            },
+            {"role": "user", "content": question}
+        ],
+        temperature=0
+    )
+    return json.loads(response.choices[0].message.content)
+
+
+def generate_scenario(
+    session,
+    source_version: str,
+    target_version: str,
+    metric_gl_map: dict,
+    deltas: dict
+):
+    """
+    Create a new planning version by applying % deltas
+    """
+
+    # 1️⃣ Ensure target version exists (ONCE)
+    session.run("""
+    MERGE (tv:PlanningVersion {version_id:$tgt})
+    ON CREATE SET tv.created_at = datetime()
+    """, {"tgt": target_version})
+
+    # 2️⃣ Apply deltas metric by metric
+    for metric, gls in metric_gl_map.items():
+        if metric not in deltas or not gls:
+            continue
+
+        pct = deltas[metric] / 100.0
+
+        session.run("""
+        MATCH (src:PlanningVersion {version_id:$src})
+        MATCH (f:PlanningFact)-[:FOR_VERSION]->(src)
+        MATCH (f)-[:FOR_GL]->(g:GLAccount)
+        WHERE toString(g.gl_code) IN $gls
+
+        OPTIONAL MATCH (existing:PlanningFact)
+          -[:FOR_VERSION]->(tv:PlanningVersion {version_id:$tgt})
+          -[:FOR_GL]->(g)
+
+        WITH f, g, tv, existing
+        WHERE existing IS NULL
+
+        CREATE (nf:PlanningFact {
+            fact_id: randomUUID(),
+            type: f.type,
+            amount: round(f.amount * (1 + $pct), 2),
+            scenario_delta: $pct,
+            created_at: datetime()
+        })
+
+        MERGE (nf)-[:FOR_GL]->(g)
+        MERGE (nf)-[:FOR_VERSION]->(tv)
+        MERGE (nf)-[:DERIVED_FROM]->(f)
+        """, {
+            "src": source_version,
+            "tgt": target_version,
+            "gls": gls,
+            "pct": pct
+        })
+
+
+
+def resolve_gls_from_metrics(session, metrics: list[str]) -> dict:
+    metric_gl_map = {}
+
+    for metric in metrics:
+        keywords = METRIC_DOMAIN_MAP.get(metric.lower(), [metric.lower()])
+
+        rows = session.run("""
+        MATCH (g:GLAccount)
+        WHERE ANY(k IN $keywords WHERE
+            toLower(g.gl_name) CONTAINS k
+            OR toLower(g.gl_category) CONTAINS k
+            OR toLower(g.gl_domain) CONTAINS k
+        )
+        RETURN DISTINCT toString(g.gl_code) AS gl_code
+        """, {"keywords": keywords}).data()
+
+        metric_gl_map[metric] = [r["gl_code"] for r in rows]
+
+    return metric_gl_map
+
+
+
+
+    # for concept in concepts:
+    #     rows = session.run("""
+    #     MATCH (g:GLAccount)
+    #     WHERE toLower(g.gl_name) CONTAINS toLower($concept)
+    #        OR toLower(g.gl_category) CONTAINS toLower($concept)
+    #     RETURN toString(g.gl_code) AS gl_code,
+    #            g.gl_name AS gl_name,
+    #            g.gl_category AS gl_category
+    #     """, {"concept": concept}).data()
+
+    #     gls = [r["gl_code"] for r in rows]
+    #     concept_gl_map[concept] = gls
+
+    # return concept_gl_map
+
+def normalize_version(version: str | None) -> str | None:
+    if not version:
+        return None
+    return version.strip().replace(" ", "_").title()
+
+def aggregate_planning_facts(session, planning_scope, metric_gl_map, version=None):
+    summary = {}
+
+    planning_scope = planning_scope.upper()
+    version = normalize_version(version)
+
+    #print ("metric_gl_map under aggregate",metric_gl_map)
+
+    for metric, gls in metric_gl_map.items():
+        if not gls:
+            continue
+
+        #print ("gls unders aggretate planning facts",gls)
+        query = """
+        MATCH (f:PlanningFact)-[:FOR_GL]->(g:GLAccount)
+        MATCH (f)-[:FOR_VERSION]->(v:PlanningVersion)
+        WHERE (
+            ($scope = 'P&L' AND f.type IN ['OPEX','REVENUE','PRODUCT_COST'])
+            OR f.type = $scope
+        )
+        AND toString(g.gl_code) IN $gls
+        """
+
+        params = {"scope": planning_scope, "gls": gls}
+
+        #print ("param Under aggregate_planning",params)
+        #print ("Version Under aggregate_planning",version)
+
+        if version:
+            query += " AND v.version_id = $version"
+            params["version"] = version
+
+        query += " RETURN v.version_id AS version, sum(f.amount) AS amount"
+
+        #print ("Query under aggregate planning",query)
+        #print ("Param under aggregate planning",params)
+
+
+        rows = session.run(query, params).data()
+
+        #print ("rows Under aggregate_planning",rows)
+
+        for r in rows:
+            summary.setdefault(r["version"], {})
+            summary[r["version"]][metric] = float(r["amount"])
+            #print ("Under aggregate_planning",r)
+
+    return summary
+
+
+# Generate Embedding
+
+def generate_embedding(text: str) -> list[float]:
+    """
+    Generate vector embedding for given text
+    """
+    response = client.embeddings.create(
+        model="text-embedding-3-large",
+        input=text
+    )
+    return response.data[0].embedding
+
+
+
+# Intent Detection
+
+def detect_intent(question: str) -> str:
+    q = question.lower()
+
+    if "which version" in q or "compare" in q:
+        return "VERSION_COMPARISON"
+    if "why" in q or "explain" in q:
+        return "EXPLANATION"
+    if "create" in q or "generate" in q:
+        return "SCENARIO_GENERATION"
+
+    return "GENERAL_QUERY"
+
+
+def format_single_version(data: dict) -> str:
+    lines = []
+    for version, metrics in data.items():
+        for m, v in metrics.items():
+            lines.append(f"{version} – {m}: {v:,.0f}")
+    return "\n".join(lines)
+
+
+# Helper function:
+
+def format_cost_summary(cost_summary: dict) -> str:
+    concepts = set()
+    for v in cost_summary.values():
+        concepts.update(v.keys())
+
+    concepts = sorted(concepts)
+
+    header = "Version | " + " | ".join(concepts)
+    lines = [header, "-" * len(header)]
+
+    for version, values in cost_summary.items():
+        row = [version]
+        for c in concepts:
+            row.append(f"{values.get(c, 0):,.0f}")
+        lines.append(" | ".join(row))
+
+    return "\n".join(lines)
+
+
+# Structured Graph Retrieval (Facts)
+
+def get_version_cost_summary(session, concept_gl_map: dict):
+    """
+    Aggregate costs per version per concept
+    """
+    summary = {}
+
+    for concept, gls in concept_gl_map.items():
+        if not gls:
+            continue
+
+        rows = session.run("""
+        MATCH (f:PlanningFact)-[:FOR_GL]->(g:GLAccount)
+        MATCH (f)-[:FOR_VERSION]->(v:PlanningVersion)
+        WHERE f.type IN (
+         CASE $scope
+            WHEN 'P&L' THEN ['OPEX','REVENUE','PRODUCT_COST']
+         ELSE [$scope]
+        END
+        )
+        AND toString(g.gl_code) IN $gls
+        RETURN v.version_id AS version, sum(f.amount) AS amount
+        """, {"gls": gls}).data()
+
+        for r in rows:
+            summary.setdefault(r["version"], {})
+            summary[r["version"]][concept] = float(r["amount"])
+
+    return summary
+
+
+# Semantic Retrieval (Contexts + Narratives)
+
+#Context Search
+
+def retrieve_contexts(session, question, top_k=3):
+    q_embedding = generate_embedding(question)
+
+    result = session.run("""
+    CALL db.index.vector.queryNodes(
+      'context_embedding_index',
+      $k,
+      $embedding
+    )
+    YIELD node, score
+    RETURN node.description AS description, score
+    """, {
+        "k": top_k,
+        "embedding": q_embedding
+    })
+
+    return result.data()
+
+
+# Narrative Search
+
+def retrieve_narratives(session, question, top_k=3):
+    q_embedding = generate_embedding(question)
+
+    result = session.run("""
+    CALL db.index.vector.queryNodes(
+      'narrative_embedding_index',
+      $k,
+      $embedding
+    )
+    YIELD node, score
+    RETURN node.text AS text, node.type AS type, score
+    """, {
+        "k": top_k,
+        "embedding": q_embedding
+    })
+
+
+ 
+
+def answer_aggregate(question, data, session):
+    lines = []
+    for version, metrics in data.items():
+        for m, v in metrics.items():
+            lines.append(f"{version} – {m}: {v:,.0f}")
+
+    facts = "\n".join(lines)
+
+    contexts = retrieve_contexts(session, question)
+    narratives = retrieve_narratives(session, question)
+
+    prompt = f"""
+You are an FP&A analyst.
+
+QUESTION:
+{question}
+
+FACTS:
+{facts}
+
+CONTEXT:
+{contexts}
+
+NARRATIVES:
+{narratives}
+
+Answer clearly and numerically.
+"""
+
+    return generate_answer(prompt)
+
+
+
+def answer_comparison(question, data, session):
+    formatted = format_cost_summary(data)
+
+    contexts = retrieve_contexts(session, question)
+    narratives = retrieve_narratives(session, question)
+
+    prompt = f"""
+You are an FP&A decision assistant.
+
+QUESTION:
+{question}
+
+VERSION COMPARISON DATA:
+{formatted}
+
+RULES:
+- Respect stated preferences (low/high)
+- Compare numerically
+- Justify decision
+
+CONTEXT:
+{contexts}
+
+NARRATIVES:
+{narratives}
+"""
+
+    return generate_answer(prompt)
+
+
+def answer_explanation(question, data, session):
+    formatted = format_cost_summary(data)
+
+    contexts = retrieve_contexts(session, question)
+    narratives = retrieve_narratives(session, question)
+
+    prompt = f"""
+You are an FP&A expert.
+
+QUESTION:
+{question}
+
+FACTS:
+{formatted}
+
+EXPLAIN USING:
+- Contexts
+- Narratives
+- Business reasoning
+
+Avoid guessing.
+"""
+
+    return generate_answer(prompt)
+
+
+# Prompt Construction
+
+
+
+def build_prompt(question, cost_table, contexts, narratives):
+    return f"""
+You are an FP&A decision assistant.
+
+BUSINESS QUESTION:
+{question}
+
+NUMERICAL FACTS (AUTHORITATIVE):
+{cost_table}
+
+INTERPRETATION RULES:
+- Lower cost is preferred unless stated otherwise
+- If higher cost is acceptable, explain why
+- You MUST compare versions numerically
+- You MUST state numbers in your answer
+- You MUST conclude which version is better
+
+CONTEXTUAL INSIGHTS:
+{contexts}
+
+BUSINESS NARRATIVES:
+{narratives}
+
+Do not invent numbers.
+Do not provide generic reasoning.
+"""
+
+
+# LLM Answer Generation
+
+def generate_answer(prompt):
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are a financial planning expert."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.2
+    )
+    return response.choices[0].message.content
+
+def normalize_scope(scope: str | None) -> str:
+    if not scope:
+        return "P&L"
+
+    scope = scope.upper()
+    if scope in ["PL", "P&L"]:
+        return "P&L"
+    if scope in ["REVENUE", "SALES"]:
+        return "REVENUE"
+    if scope in ["PRODUCT_COST", "COST_OF_GOODS"]:
+        return "PRODUCT_COST"
+    return scope
+
+def generate_scenario_version_name(base_version):
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"{base_version}_SCN_{ts}"
+
+
+# End to End RAG Pipeline
+def answer_question(question: str):
+    query_struct = extract_query_structure(question)
+
+    intent = query_struct["intent"]
+    scope = normalize_scope(query_struct.get("planning_scope"))
+    scope = scope.upper()
+    metrics = query_struct.get("metrics", [])
+
+    version = normalize_version(query_struct.get("version"))
+
+    if version and version.lower() in ["better", "higher", "lower"]:
+        version = None
+
+    #print ("intent",intent)
+    #print ("scope",scope)
+    #print ("metrics",metrics)
+    #print ("version",version)
+
+    with driver.session() as session:
+        metric_gl_map = resolve_gls_from_metrics(session, metrics)
+
+        #print ("metric GL map",metric_gl_map)
+
+        data = aggregate_planning_facts(
+            session,
+            planning_scope=scope,
+            metric_gl_map=metric_gl_map,
+            version=version
+        )
+
+        if not data:
+            return "No financial data found for the given query."
+
+
+        # 🔀 EXECUTION MODE SWITCH
+        if intent == "aggregate":
+            formatted = format_single_version(data)
+            return answer_aggregate(question, data, session)
+
+        if intent == "compare":
+            return answer_comparison(question, data, session)
+
+        if intent == "explain":
+            return answer_explanation(question, data, session)
+        
+        if intent == "scenario":
+            source_version = query_struct.get("source_version") or "Budget_2026"
+            target_version = (
+                query_struct.get("target_version")
+                or generate_scenario_version_name(source_version)
+            )
+
+
+            deltas = query_struct.get("deltas", {})
+
+            generate_scenario(
+                session=session,
+                source_version=source_version,
+                target_version=target_version,
+                metric_gl_map=metric_gl_map,
+                deltas=deltas
+            )
+
+            return f"""
+            Scenario created successfully ✅
+
+            Source Version : {source_version}
+            New Version    : {target_version}
+
+            Changes Applied:
+            {json.dumps(deltas, indent=2)}
+            """
+
+
+        return "Query type not supported yet."
+
+
+# response = answer_question(
+#     "Generate new planning version with name BUDGET_2026_V1 by reducing salary cost by 5%, increasing IT cost by 10%, and increasing revenue by 15%"
+# )
+
+# print(response)
