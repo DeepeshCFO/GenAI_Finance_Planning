@@ -1,0 +1,138 @@
+import os
+from dotenv import load_dotenv
+
+from openai import OpenAI
+from neo4j import GraphDatabase
+import json
+
+import pandas as pd
+from hashlib import md5
+from datetime import datetime
+
+
+load_dotenv('.env', override=True)
+
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+OPENAI_BASE_URL = os.getenv('OPENAI_BASE_URL')
+
+NEO4J_URI = os.getenv('NEO4J_NEW_URI')
+NEO4J_USERNAME = os.getenv('NEO4J_USERNAME')
+NEO4J_PASSWORD = os.getenv('NEO4J_NEW_PASSWORD')
+NEO4J_DATABASE = os.getenv('NEO4J_DATABASE') or 'neo4j'
+
+# Connect to Neo4j (Python)
+driver = GraphDatabase.driver(
+    NEO4J_URI,
+    auth=(NEO4J_USERNAME, NEO4J_PASSWORD)
+)
+
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+# Def Generate Embedding
+
+def generate_embedding(text: str) -> list[float]:
+    """
+    Generate vector embedding for given text
+    """
+    response = client.embeddings.create(
+        model="text-embedding-3-large",
+        input=text
+    )
+    return response.data[0].embedding
+
+# Def Embedding for Narratives
+
+def embed_narratives(session):
+    query = """
+    MATCH (n:Narrative)
+    WHERE n.embedding IS NULL
+    RETURN n.narrative_id AS id, n.text AS text
+    """
+
+    results = session.run(query)
+
+    for row in results:
+        embedding = generate_embedding(row["text"])
+
+        session.run("""
+        MATCH (n:Narrative {narrative_id:$id})
+        SET n.embedding = $embedding,
+            n.embedding_model = 'text-embedding-3-large',
+            n.embedding_created_at = datetime()
+        """, {
+            "id": row["id"],
+            "embedding": embedding
+        })
+
+        print(f"Embedded Narrative {row['id']}")
+
+# Call Embedding for Narratves
+
+with driver.session() as session:
+    embed_narratives(session)
+
+
+# Def embedding for Context
+
+def embed_contexts(session):
+    query = """
+    MATCH (c:Context)
+    WHERE c.embedding IS NULL
+    RETURN c.context_id AS id, c.description AS text
+    """
+
+    results = session.run(query)
+
+    for row in results:
+        embedding = generate_embedding(row["text"])
+
+        session.run("""
+        MATCH (c:Context {context_id:$id})
+        SET c.embedding = $embedding,
+            c.embedding_model = 'text-embedding-3-large',
+            c.embedding_created_at = datetime()
+        """, {
+            "id": row["id"],
+            "embedding": embedding
+        })
+
+        print(f"Embedded Context {row['id']}")
+
+# Execute embedding for Context
+
+with driver.session() as session:
+    embed_contexts(session)
+
+# Def Semantic Search context
+
+def semantic_search_contexts(session, question, top_k=3):
+    query_embedding = generate_embedding(question)
+
+    result = session.run("""
+    CALL db.index.vector.queryNodes(
+      'context_embedding_index',
+      $k,
+      $embedding
+    )
+    YIELD node, score
+    RETURN node.description, score
+    """, {
+        "k": top_k,
+        "embedding": query_embedding
+    })
+
+    return result.data()
+
+
+with driver.session() as session:
+    results = semantic_search_contexts(
+        session,
+        "Why did salary cost increase in the budget?"
+    )
+
+    for r in results:
+        print(r)
+
+
+
+
