@@ -1,0 +1,101 @@
+Company_Code,Business_Unit,Cost_Center,GL_Account,GL_Description,Time_Period,Planning_Version,Amount,Currency
+CompanyA,Retail,HR001,630000,Marketing,2026-12,Forecast_2026,208393,AED
+CompanyA,Automotive,HR001,610000,Salaries,2026-11,Budget_2026,389588,AED
+CompanyA,Retail,HR001,620000,IT Services,2026-02,Budget_2026,201981,AED
+CompanyA,Retail,IT001,630000,Marketing,2026-12,Forecast_2026,195574,AED
+CompanyA,RealEstate,HR001,620000,IT Services,2026-03,Forecast_2026,258389,AED
+CompanyA,Automotive,IT001,620000,IT Services,2026-06,Budget_2026,128625,AED
+CompanyA,Retail,MKT001,620000,IT Services,2026-06,Forecast_2026,102780,AED
+CompanyA,Corporate,HR001,630000,Marketing,2026-07,Budget_2026,369428,AED
+CompanyA,RealEstate,IT001,620000,IT Services,2026-12,Budget_2026,104025,AED
+CompanyA,Automotive,MKT001,630000,Marketing,2026-02,Budget_2026,132953,AED
+CompanyA,RealEstate,OPS001,620000,IT Services,2026-11,Forecast_2026,165277,AED
+CompanyA,RealEstate,IT001,620000,IT Services,2026-11,Forecast_2026,117435,AED
+CompanyA,Automotive,IT001,630000,Marketing,2026-03,Forecast_2026,278943,AED
+CompanyA,Automotive,MKT001,620000,IT Services,2026-01,Budget_2026,96829,AED
+CompanyA,Corporate,MKT001,620000,IT Services,2026-02,Budget_2026,377365,AED
+CompanyA,RealEstate,IT001,630000,Marketing,2026-11,Forecast_2026,287425,AED
+CompanyA,Corporate,IT001,630000,Marketing,2026-05,Budget_2026,209303,AED
+CompanyA,RealEstate,OPS001,630000,Marketing,2026-10,Forecast_2026,269790,AED
+CompanyA,Automotive,OPS001,610000,Salaries,2026-02,Budget_2026,137487,AED
+CompanyA,Automotive,OPS001,610000,Salaries,2026-10,Budget_2026,281728,AED
+CompanyA,Corporate,MKT001,620000,IT Services,2026-09,Budget_2026,140058,AED
+CompanyA,RealEstate,MKT001,630000,Marketing,2026-02,Forecast_2026,307942,AED
+CompanyA,Corporate,HR001,610000,Salaries,2026-12,Forecast_2026,342451,AED
+CompanyA,Retail,MKT001,610000,Salaries,2026-11,Budget_2026,160131,AED
+CompanyA,Automotive,HR001,620000,IT Services,2026-10,Forecast_2026,336170,AED
+CompanyA,Retail,MKT001,610000,Salaries,2026-05,Budget_2026,110369,AED
+CompanyA,Retail,HR001,610000,Salaries,2026-12,Forecast_2026,116287,AED
+CompanyA,Automotive,IT001,630000,Marketing,2026-11,Forecast_2026,368255,AED
+CompanyA,RealEstate,OPS001,610000,Salaries,2026-04,Budget_2026,243429,AED
+CompanyA,RealEstate,OPS001,620000,IT Services,2026-09,Forecast_2026,143441,AED
+CompanyA,Automotive,HR001,610000,Salaries,2026-06,Budget_2026,388443,AED
+CompanyA,Automotive,IT001,630000,Marketing,2026-01,Budget_2026,110866,AED
+CompanyA,Retail,HR001,610000,Salaries,2026-06,Budget_2026,349565,AED
+CompanyA,RealEstate,OPS001,610000,Salaries,2026-04,Budget_2026,379391,AED
+CompanyA,Corporate,IT001,630000,Marketing,2026-08,Forecast_2026,179829,AED
+CompanyA,Retail,OPS001,610000,Salaries,2026-06,Forecast_2026,295535,AED
+CompanyA,Retail,HR001,620000,IT Services,2026-01,Forecast_2026,257892,AED
+CompanyA,Automotive,IT001,610000,Salaries,2026-04,Forecast_2026,153495,AED
+CompanyA,Automotive,MKT001,620000,IT Services,2026-08,Budget_2026,119523,AED
+CompanyA,Retail,HR001,620000,IT Services,2026-11,Budget_2026,128896,AED
+CompanyA,Automotive,OPS001,610000,Salaries,2026-08,Forecast_2026,192065,AED
+CompanyA,Retail,IT001,620000,IT Services,2026-07,Budget_2026,284693,AED
+CompanyA,Corporate,MKT001,620000,IT Services,2026-07,Forecast_2026,161158,AED
+CompanyA,RealEstate,IT001,610000,Salaries,2026-01,Budget_2026,244419,AED
+CompanyA,Retail,OPS001,610000,Salaries,2026-09,Budget_2026,109821,AED
+CompanyA,Retail,IT001,630000,Marketing,2026-02,Budget_2026,203314,AED
+CompanyA,Retail,IT001,620000,IT Services,2026-10,Budget_2026,122982,AED
+CompanyA,RealEstate,MKT001,620000,IT Services,2026-04,Forecast_2026,205140,AED
+CompanyA,Corporate,IT001,620000,IT Services,2026-11,Forecast_2026,319717,AED
+CompanyA,Retail,HR001,620000,IT Services,2026-08,Budget_2026,118409,AED
+CompanyA,Automotive,MKT001,630000,Marketing,2026-03,Forecast_2026,116066,AED
+CompanyA,RealEstate,MKT001,610000,Salaries,2026-03,Forecast_2026,364802,AED
+CompanyA,RealEstate,HR001,630000,Marketing,2026-11,Forecast_2026,134309,AED
+CompanyA,RealEstate,HR001,610000,Salaries,2026-02,Budget_2026,222788,AED
+CompanyA,Automotive,MKT001,620000,IT Services,2026-04,Forecast_2026,344979,AED
+CompanyA,RealEstate,HR001,620000,IT Services,2026-02,Forecast_2026,225060,AED
+CompanyA,Retail,MKT001,610000,Salaries,2026-03,Forecast_2026,164715,AED
+CompanyA,Corporate,OPS001,630000,Marketing,2026-09,Budget_2026,138654,AED
+CompanyA,Automotive,HR001,610000,Salaries,2026-06,Budget_2026,305332,AED
+CompanyA,Retail,MKT001,610000,Salaries,2026-06,Budget_2026,267595,AED
+CompanyA,Automotive,HR001,610000,Salaries,2026-06,Forecast_2026,161030,AED
+CompanyA,Automotive,IT001,610000,Salaries,2026-07,Budget_2026,174036,AED
+CompanyA,RealEstate,OPS001,630000,Marketing,2026-11,Budget_2026,219883,AED
+CompanyA,Retail,OPS001,610000,Salaries,2026-01,Forecast_2026,196619,AED
+CompanyA,Corporate,MKT001,610000,Salaries,2026-05,Budget_2026,196876,AED
+CompanyA,Automotive,OPS001,610000,Salaries,2026-06,Forecast_2026,116396,AED
+CompanyA,RealEstate,OPS001,620000,IT Services,2026-11,Forecast_2026,94470,AED
+CompanyA,RealEstate,IT001,610000,Salaries,2026-10,Forecast_2026,100057,AED
+CompanyA,Corporate,MKT001,610000,Salaries,2026-12,Forecast_2026,308796,AED
+CompanyA,Retail,OPS001,630000,Marketing,2026-10,Budget_2026,213547,AED
+CompanyA,Corporate,HR001,610000,Salaries,2026-09,Budget_2026,270956,AED
+CompanyA,Retail,MKT001,620000,IT Services,2026-10,Forecast_2026,145339,AED
+CompanyA,RealEstate,MKT001,630000,Marketing,2026-11,Forecast_2026,251013,AED
+CompanyA,RealEstate,IT001,620000,IT Services,2026-04,Forecast_2026,278781,AED
+CompanyA,Automotive,MKT001,630000,Marketing,2026-07,Budget_2026,239317,AED
+CompanyA,Automotive,OPS001,620000,IT Services,2026-10,Forecast_2026,323787,AED
+CompanyA,Corporate,IT001,620000,IT Services,2026-09,Forecast_2026,168967,AED
+CompanyA,Retail,MKT001,630000,Marketing,2026-09,Forecast_2026,128961,AED
+CompanyA,RealEstate,IT001,610000,Salaries,2026-04,Budget_2026,92805,AED
+CompanyA,Automotive,OPS001,610000,Salaries,2026-10,Budget_2026,318769,AED
+CompanyA,Automotive,OPS001,620000,IT Services,2026-08,Forecast_2026,207918,AED
+CompanyA,Retail,HR001,610000,Salaries,2026-07,Budget_2026,172215,AED
+CompanyA,Corporate,HR001,630000,Marketing,2026-09,Budget_2026,143626,AED
+CompanyA,Automotive,OPS001,620000,IT Services,2026-11,Forecast_2026,312035,AED
+CompanyA,Corporate,OPS001,630000,Marketing,2026-03,Forecast_2026,315966,AED
+CompanyA,Automotive,MKT001,620000,IT Services,2026-09,Forecast_2026,205433,AED
+CompanyA,Corporate,HR001,620000,IT Services,2026-12,Forecast_2026,202942,AED
+CompanyA,RealEstate,MKT001,620000,IT Services,2026-09,Budget_2026,152547,AED
+CompanyA,Automotive,OPS001,610000,Salaries,2026-12,Budget_2026,192172,AED
+CompanyA,Corporate,OPS001,610000,Salaries,2026-06,Forecast_2026,297985,AED
+CompanyA,Automotive,OPS001,610000,Salaries,2026-07,Budget_2026,381827,AED
+CompanyA,Corporate,HR001,620000,IT Services,2026-06,Forecast_2026,284465,AED
+CompanyA,Automotive,OPS001,620000,IT Services,2026-04,Forecast_2026,308503,AED
+CompanyA,Retail,OPS001,620000,IT Services,2026-06,Forecast_2026,166530,AED
+CompanyA,Automotive,HR001,620000,IT Services,2026-07,Budget_2026,124012,AED
+CompanyA,Corporate,IT001,630000,Marketing,2026-08,Budget_2026,106363,AED
+CompanyA,Corporate,MKT001,620000,IT Services,2026-04,Forecast_2026,251361,AED
+CompanyA,Corporate,MKT001,620000,IT Services,2026-07,Forecast_2026,122942,AED
+CompanyA,Retail,HR001,620000,IT Services,2026-06,Budget_2026,115975,AED
+CompanyA,Retail,HR001,630000,Marketing,2026-04,Budget_2026,90684,AED

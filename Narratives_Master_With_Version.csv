@@ -1,0 +1,21 @@
+Narrative_ID,Narrative_Type,Scope,Narrative_Text,Planning_Version
+A1,Assumption,OPEX,Salary expenses are planned with an average annual increment of 5% driven by inflation and market competitiveness.,Budget_2026
+A2,Assumption,OPEX,IT service costs are expected to increase due to higher cloud consumption and cybersecurity investments.,Budget_2026
+A3,Assumption,OPEX,Marketing expenses are front-loaded in the first half of the year to support new product launches.,Forecast_2026
+A4,Assumption,REVENUE,Retail product revenue in UAE is expected to grow due to stable consumer demand and seasonal promotions.,Budget_2026
+A5,Assumption,REVENUE,Automotive sales volumes are conservative due to supply-chain constraints and delivery lead times.,Budget_2026
+A6,Assumption,REVENUE,"Sales prices are assumed to remain flat, with growth driven primarily by volume.",Budget_2026
+A7,Assumption,PRODUCT_COST,Material costs are assumed to decrease gradually due to vendor renegotiations and bulk purchasing.,Forecast_2026
+A8,Assumption,PRODUCT_COST,Manufacturing overheads increase marginally in line with higher production volumes.,Forecast_2026
+R1,Rule,OPEX,Salary-related GL accounts should be increased or decreased uniformly across all cost centers when applying workforce scenarios.,Forecast_2026
+R2,Rule,OPEX,IT costs are treated as semi-variable and should scale with business activity rather than headcount.,Budget_2026
+R3,Rule,REVENUE,Revenue adjustments should be applied at the product and market level before aggregation to P&L.,Budget_2026
+R4,Rule,REVENUE,Discounts and returns should be modeled under the same revenue GL but with negative values.,Forecast_2026
+R5,Rule,PRODUCT_COST,Product cost reduction scenarios should proportionally adjust material and manufacturing cost GLs.,Forecast_2026
+R6,Rule,PL,Operating profit is derived as Revenue minus COGS minus OPEX and should not be manually overridden.,Forecast_2026
+E1,Explanation,OPEX,The increase in salary expenses is mainly driven by annual increments and selective hiring in IT and digital roles.,Budget_2026
+E2,Explanation,OPEX,IT service costs increased due to expanded cloud usage and system modernization initiatives.,Budget_2026
+E3,Explanation,REVENUE,Revenue growth in Retail is supported by higher unit sales rather than price increases.,Budget_2026
+E4,Explanation,REVENUE,Automotive revenue remains flat due to conservative volume assumptions.,Forecast_2026
+E5,Explanation,PRODUCT_COST,Product cost improvements are driven by better sourcing terms and manufacturing efficiency.,Forecast_2026
+E6,Explanation,PL,Operating profit improved due to better cost control despite stable revenue.,Forecast_2026

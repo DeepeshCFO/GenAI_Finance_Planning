@@ -1,0 +1,101 @@
+Company_Code,Business_Unit,GL_Account,GL_Description,Time_Period,Planning_Version,Amount,Currency
+CompanyA,RealEstate,600000,OPEX,2026-10,Budget_2026,-1161817,AED
+CompanyA,Corporate,500000,COGS,2026-03,Forecast_2026,3272454,AED
+CompanyA,Corporate,600000,OPEX,2026-12,Forecast_2026,3353116,AED
+CompanyA,Automotive,500000,COGS,2026-11,Budget_2026,1408269,AED
+CompanyA,RealEstate,700000,Operating Profit,2026-02,Budget_2026,-2481936,AED
+CompanyA,Automotive,500000,COGS,2026-03,Forecast_2026,4167948,AED
+CompanyA,Retail,700000,Operating Profit,2026-11,Budget_2026,3013943,AED
+CompanyA,Retail,700000,Operating Profit,2026-09,Forecast_2026,3783800,AED
+CompanyA,Corporate,400000,Total Revenue,2026-03,Forecast_2026,831903,AED
+CompanyA,Corporate,400000,Total Revenue,2026-11,Forecast_2026,3067313,AED
+CompanyA,Corporate,400000,Total Revenue,2026-05,Budget_2026,3256261,AED
+CompanyA,Retail,500000,COGS,2026-01,Forecast_2026,-109883,AED
+CompanyA,Retail,400000,Total Revenue,2026-02,Forecast_2026,-2733789,AED
+CompanyA,Corporate,600000,OPEX,2026-03,Budget_2026,3424228,AED
+CompanyA,RealEstate,700000,Operating Profit,2026-07,Forecast_2026,4294903,AED
+CompanyA,Corporate,700000,Operating Profit,2026-02,Budget_2026,2482241,AED
+CompanyA,Retail,600000,OPEX,2026-03,Forecast_2026,1436252,AED
+CompanyA,Automotive,500000,COGS,2026-01,Budget_2026,-497150,AED
+CompanyA,Corporate,700000,Operating Profit,2026-09,Forecast_2026,3906847,AED
+CompanyA,Automotive,500000,COGS,2026-08,Forecast_2026,-1698748,AED
+CompanyA,Automotive,600000,OPEX,2026-12,Budget_2026,-2729742,AED
+CompanyA,Retail,700000,Operating Profit,2026-04,Budget_2026,-2435523,AED
+CompanyA,Retail,400000,Total Revenue,2026-08,Budget_2026,-947022,AED
+CompanyA,Corporate,400000,Total Revenue,2026-08,Budget_2026,1527833,AED
+CompanyA,Retail,500000,COGS,2026-03,Forecast_2026,-1035711,AED
+CompanyA,RealEstate,600000,OPEX,2026-04,Forecast_2026,4350587,AED
+CompanyA,Automotive,500000,COGS,2026-07,Forecast_2026,-691842,AED
+CompanyA,Automotive,400000,Total Revenue,2026-11,Forecast_2026,1662813,AED
+CompanyA,Retail,700000,Operating Profit,2026-06,Forecast_2026,3591806,AED
+CompanyA,Corporate,600000,OPEX,2026-07,Budget_2026,-484353,AED
+CompanyA,Automotive,700000,Operating Profit,2026-09,Forecast_2026,-978613,AED
+CompanyA,RealEstate,500000,COGS,2026-12,Budget_2026,3759340,AED
+CompanyA,Retail,700000,Operating Profit,2026-09,Forecast_2026,493921,AED
+CompanyA,Corporate,500000,COGS,2026-04,Forecast_2026,-1294288,AED
+CompanyA,Retail,600000,OPEX,2026-08,Forecast_2026,-2224356,AED
+CompanyA,Retail,500000,COGS,2026-05,Forecast_2026,2651169,AED
+CompanyA,Retail,400000,Total Revenue,2026-04,Budget_2026,1021450,AED
+CompanyA,RealEstate,500000,COGS,2026-05,Budget_2026,-1223228,AED
+CompanyA,Retail,500000,COGS,2026-12,Forecast_2026,4670889,AED
+CompanyA,Automotive,500000,COGS,2026-07,Budget_2026,1631176,AED
+CompanyA,RealEstate,600000,OPEX,2026-07,Forecast_2026,1476581,AED
+CompanyA,RealEstate,600000,OPEX,2026-05,Forecast_2026,1301816,AED
+CompanyA,Corporate,700000,Operating Profit,2026-02,Forecast_2026,3389006,AED
+CompanyA,Automotive,600000,OPEX,2026-06,Forecast_2026,472297,AED
+CompanyA,Automotive,400000,Total Revenue,2026-12,Budget_2026,-2863938,AED
+CompanyA,Corporate,600000,OPEX,2026-05,Budget_2026,-1354225,AED
+CompanyA,Automotive,600000,OPEX,2026-07,Budget_2026,1188444,AED
+CompanyA,RealEstate,600000,OPEX,2026-08,Forecast_2026,865713,AED
+CompanyA,RealEstate,500000,COGS,2026-03,Budget_2026,3042427,AED
+CompanyA,Automotive,700000,Operating Profit,2026-09,Budget_2026,1395164,AED
+CompanyA,Retail,400000,Total Revenue,2026-11,Budget_2026,3411738,AED
+CompanyA,Corporate,400000,Total Revenue,2026-03,Budget_2026,-2429844,AED
+CompanyA,Retail,500000,COGS,2026-04,Forecast_2026,130634,AED
+CompanyA,Corporate,400000,Total Revenue,2026-11,Forecast_2026,-2868033,AED
+CompanyA,Corporate,400000,Total Revenue,2026-01,Budget_2026,1441077,AED
+CompanyA,RealEstate,600000,OPEX,2026-01,Forecast_2026,3762624,AED
+CompanyA,Retail,500000,COGS,2026-02,Budget_2026,-978607,AED
+CompanyA,RealEstate,500000,COGS,2026-06,Forecast_2026,3668409,AED
+CompanyA,Retail,700000,Operating Profit,2026-06,Forecast_2026,850352,AED
+CompanyA,Automotive,500000,COGS,2026-05,Budget_2026,2483932,AED
+CompanyA,Retail,400000,Total Revenue,2026-07,Forecast_2026,163927,AED
+CompanyA,Retail,700000,Operating Profit,2026-11,Budget_2026,2895892,AED
+CompanyA,Retail,500000,COGS,2026-08,Forecast_2026,2409874,AED
+CompanyA,Retail,600000,OPEX,2026-09,Budget_2026,-1072579,AED
+CompanyA,Corporate,500000,COGS,2026-05,Budget_2026,4752409,AED
+CompanyA,RealEstate,400000,Total Revenue,2026-09,Budget_2026,-1495466,AED
+CompanyA,Retail,600000,OPEX,2026-04,Budget_2026,3310367,AED
+CompanyA,Retail,700000,Operating Profit,2026-05,Budget_2026,1730824,AED
+CompanyA,Corporate,500000,COGS,2026-11,Forecast_2026,219935,AED
+CompanyA,Retail,500000,COGS,2026-09,Forecast_2026,-2549562,AED
+CompanyA,Corporate,400000,Total Revenue,2026-04,Budget_2026,-142901,AED
+CompanyA,RealEstate,700000,Operating Profit,2026-01,Forecast_2026,3572878,AED
+CompanyA,Corporate,700000,Operating Profit,2026-04,Forecast_2026,1639216,AED
+CompanyA,Corporate,700000,Operating Profit,2026-03,Forecast_2026,-2281146,AED
+CompanyA,Automotive,600000,OPEX,2026-12,Budget_2026,-2311816,AED
+CompanyA,Automotive,600000,OPEX,2026-07,Budget_2026,3204678,AED
+CompanyA,RealEstate,700000,Operating Profit,2026-06,Budget_2026,-2232271,AED
+CompanyA,RealEstate,400000,Total Revenue,2026-08,Forecast_2026,3386637,AED
+CompanyA,Retail,600000,OPEX,2026-03,Budget_2026,-1428044,AED
+CompanyA,Corporate,700000,Operating Profit,2026-09,Forecast_2026,-2133517,AED
+CompanyA,Retail,400000,Total Revenue,2026-06,Budget_2026,2007366,AED
+CompanyA,Corporate,600000,OPEX,2026-01,Forecast_2026,471290,AED
+CompanyA,Retail,700000,Operating Profit,2026-12,Budget_2026,1797951,AED
+CompanyA,Corporate,500000,COGS,2026-03,Budget_2026,-744145,AED
+CompanyA,RealEstate,600000,OPEX,2026-08,Budget_2026,-2469277,AED
+CompanyA,Corporate,500000,COGS,2026-05,Forecast_2026,-485496,AED
+CompanyA,Retail,700000,Operating Profit,2026-06,Forecast_2026,4920710,AED
+CompanyA,Corporate,500000,COGS,2026-10,Budget_2026,840821,AED
+CompanyA,Automotive,400000,Total Revenue,2026-05,Budget_2026,4959308,AED
+CompanyA,RealEstate,700000,Operating Profit,2026-10,Forecast_2026,3745082,AED
+CompanyA,Corporate,600000,OPEX,2026-06,Forecast_2026,3840704,AED
+CompanyA,RealEstate,500000,COGS,2026-06,Budget_2026,1018224,AED
+CompanyA,Automotive,600000,OPEX,2026-07,Forecast_2026,-555156,AED
+CompanyA,Automotive,700000,Operating Profit,2026-06,Forecast_2026,-648672,AED
+CompanyA,RealEstate,700000,Operating Profit,2026-02,Budget_2026,1967960,AED
+CompanyA,Retail,500000,COGS,2026-12,Forecast_2026,4910246,AED
+CompanyA,Corporate,500000,COGS,2026-05,Budget_2026,3869981,AED
+CompanyA,Corporate,700000,Operating Profit,2026-03,Forecast_2026,-969780,AED
+CompanyA,Automotive,600000,OPEX,2026-12,Forecast_2026,3619255,AED
+CompanyA,Retail,700000,Operating Profit,2026-08,Forecast_2026,1884216,AED
